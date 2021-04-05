@@ -22,15 +22,6 @@ def test(model_path, P_path, N_path, imsize):
     print("\nTP", TP, "TN", TN, "FP", FP, "FN", FN)
     print("Accuracy :", (TP+TN)/(TP+TN+FP+FN))
 
-# model_path = 'model_ub.txt'
-# P_path = 'training_ub/true'
-# N_path = 'training_ub/false'
-# test(model_path, P_path, N_path, (25,50))
-
-# model_path = 'model_katarak.txt'
-# P_path = 'training_katarak/true'
-# N_path = 'training_katarak/false'
-# test(model_path, P_path, N_path, (24, 24))
 
 model_path = "model_face.txt"
 P_path = '/media/pandu/Dewabrata/natural images/face'

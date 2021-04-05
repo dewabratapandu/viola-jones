@@ -27,7 +27,12 @@ def test(model_path, P_path, N_path, imsize):
 # N_path = 'training_ub/false'
 # test(model_path, P_path, N_path, (25,50))
 
-model_path = 'model_katarak.txt'
-P_path = 'training_katarak/true'
-N_path = 'training_katarak/false'
-test(model_path, P_path, N_path, (24, 24))
+# model_path = 'model_katarak.txt'
+# P_path = 'training_katarak/true'
+# N_path = 'training_katarak/false'
+# test(model_path, P_path, N_path, (24, 24))
+
+model_path = "model_face.txt"
+P_path = '/media/pandu/Dewabrata/natural images/face'
+N_path = '/media/pandu/Dewabrata/natural images/non-face'
+test(model_path, P_path, N_path, (24,24))

@@ -57,4 +57,4 @@ def alpha(error):
     return math.log(1/beta(error))
 
 def beta(error): 
-    return error/(1 - error) 
+    return error/(1 - error)

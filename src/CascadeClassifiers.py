@@ -11,6 +11,9 @@ class CascadeClassifier:
     def __init__(self):
         self.cascadeClf = []
 
+    def __del__(self):
+        haar.FISRTRUN = True
+
     def save(self, filename):
         # prepare .txt file
         model = open(filename, "w")
@@ -48,17 +51,14 @@ class CascadeClassifier:
                     line[6] = float(line[6])
                     strClf.append(line)
 
-    def feature_extracting(self, P_path, N_path, imsize=(24,24), featureTypes = ("type_one", "type_two", "type_three", "type_four", "type_five"), step=1):
+    def feature_extracting(self, P_paths, N_paths, imsize=(24,24), featureTypes = ("type_one", "type_two", "type_three", "type_four", "type_five"), step=1):
         self.imsize = imsize
-        self.P_path = P_path
-        self.N_path = N_path
+        self.P_paths = P_paths
+        self.N_paths = N_paths
         self.features = []
 
         # Haar Feature Extraction
-        self.P_paths = [os.path.join(self.P_path, s) for s in sorted(os.listdir(self.P_path))]
-        self.N_paths = [os.path.join(self.N_path, s) for s in sorted(os.listdir(self.N_path))]
         training_paths = self.N_paths + self.P_paths
-
         print('Extracting Haar Feature...')
         for i, filename in enumerate(tqdm(training_paths)):
             im = cv2.imread(filename, 0)
@@ -76,12 +76,11 @@ class CascadeClassifier:
             
         print('Haar Extracted...')
 
-    def predict(self, src, cascadeClf=None, imsize=None):
+    def predict(self, im, cascadeClf=None, imsize=None):
         if cascadeClf == None:
             cascadeClf = self.cascadeClf
         if imsize == None:
             imsize = self.imsize
-        im = cv2.imread(src, 0)
         im = cv2.resize(im, imsize)
         im = haar.integralImage(im)
         for strClf in cascadeClf:
@@ -123,6 +122,8 @@ class CascadeClassifier:
 
                 # Train adaboost
                 thres -= 1
+                if abs(thres) > len_N + len_P:
+                    break
                 if n == 1:
                     prevCond, self.features, self.features_list = ada.adaboost(len_P, len_N, self.features, self.features_list, thres)
                 else:
@@ -131,8 +132,8 @@ class CascadeClassifier:
 
                 # Evaluate F and D
                 clf = [strClf]
-                posResult = [self.predict(p, clf) for p in self.P_paths]
-                negResult = [self.predict(n, clf) for n in self.N_paths]
+                posResult = [self.predict(cv2.imread(p,0), clf) for p in self.P_paths]
+                negResult = [self.predict(cv2.imread(n,0), clf) for n in self.N_paths]
                 TP, FN, TN, FP = self.confusionMatrix(len_P, len_N, posResult, negResult)
                 print("TP", TP, "TN", TN, "FP", FP, "FN", FN)
     

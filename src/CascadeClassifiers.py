@@ -6,6 +6,7 @@ import cv2
 import src.adaboost as ada
 import src.haar_extractor as haar
 from tqdm import tqdm
+from sklearn.metrics import confusion_matrix
 
 class CascadeClassifier:
     def __init__(self):
@@ -134,7 +135,9 @@ class CascadeClassifier:
                 clf = [strClf]
                 posResult = [self.predict(cv2.imread(p,0), clf) for p in self.P_paths]
                 negResult = [self.predict(cv2.imread(n,0), clf) for n in self.N_paths]
-                TP, FN, TN, FP = self.confusionMatrix(len_P, len_N, posResult, negResult)
+                y_true = np.hstack((np.zeros(len_N), np.ones(len_P)))
+                y_pred = np.array(negResult + posResult)
+                TN, FP, FN, TP = confusion_matrix(y_true, y_pred, labels=[1,0]).ravel()
                 print("TP", TP, "TN", TN, "FP", FP, "FN", FN)
     
                 F[i] = FP/(FP+TN)
@@ -159,12 +162,3 @@ class CascadeClassifier:
             negResult = np.array(negResult)
             remove_indices = np.argwhere(negResult == 0)
             self.features = [i for j, i in enumerate(self.features) if j not in remove_indices]
-
-    def confusionMatrix(self, P, N, posResult, negResult):
-        TP = sum([1 for h in posResult if h==1])
-        FN = P - TP
-
-        TN = sum([1 for h in negResult if h==0])
-        FP = N - TN
-
-        return TP, FN, TN, FP

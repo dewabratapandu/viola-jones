@@ -1,12 +1,16 @@
+import os
 from src.CascadeClassifiers import CascadeClassifier
 
-## DATASET FACE
-model_path = "model_face.txt"
-P_paths = '/media/pandu/Dewabrata/natural images/face'
-N_paths = '/media/pandu/Dewabrata/natural images/non-face'
-imsize = (24,24)
+## DATASET
+model_path = "model.txt"
+P_path = 'dataset/face'
+N_path = 'dataset/non-face'
+imsize = (24, 24)
+
+P_paths = [os.path.join(P_path, s) for s in sorted(os.listdir(P_path))]
+N_paths = [os.path.join(N_path, s) for s in sorted(os.listdir(N_path))]
 
 model = CascadeClassifier()
 model.feature_extracting(P_paths, N_paths)
-model.fit(Ftarget=0.2, Dtarget=0.8, f=0.2, d=0.8)
+model.fit(Ftarget=0.1, Dtarget=0.9, f=0.1, d=0.9)
 model.save(model_path)

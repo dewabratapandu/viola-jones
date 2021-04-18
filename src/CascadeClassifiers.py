@@ -155,7 +155,7 @@ class CascadeClassifier:
             self.cascadeClf.append(strClf)
 
             # Leaving negative images that is wrongly detected (False Positive)
-            self.N_paths = self.eliminateTrueNeg(self.N_paths, negResult)
+            self.N_paths = [self.N_paths[i] for i in range(len_N) if negResult[i]==1]
             negResult = np.array(negResult)
             remove_indices = np.argwhere(negResult == 0)
             self.features = [i for j, i in enumerate(self.features) if j not in remove_indices]
@@ -168,10 +168,3 @@ class CascadeClassifier:
         FP = N - TN
 
         return TP, FN, TN, FP
-
-    def eliminateTrueNeg(self, Nimg, prediction):
-        NimgBaru = list()
-        for i in range(len(prediction)):
-            if(prediction[i] == 1):
-                NimgBaru.append(Nimg[i])
-        return NimgBaru

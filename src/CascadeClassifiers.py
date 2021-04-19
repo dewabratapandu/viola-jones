@@ -8,6 +8,12 @@ import src.haar_extractor as haar
 from tqdm import tqdm
 from sklearn.metrics import confusion_matrix
 
+def resize(image,window_height = 500):
+    aspect_ratio = float(image.shape[1])/float(image.shape[0])
+    window_width = window_height/aspect_ratio
+    image = cv2.resize(image, (int(window_height),int(window_width)))
+    return image
+
 class CascadeClassifier:
     def __init__(self):
         self.cascadeClf = []
@@ -77,18 +83,20 @@ class CascadeClassifier:
             
         print('Haar Extracted...')
 
-    def predict(self, im, cascadeClf=None, imsize=None):
+    def predict(self, im, cascadeClf=None, imsize=None, show=False, trueClass=None):
         if cascadeClf == None:
             cascadeClf = self.cascadeClf
         if imsize == None:
             imsize = self.imsize
-        im = cv2.resize(im, imsize)
-        im = haar.integralImage(im)
+
+        im_pred = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+        im_pred = cv2.resize(im_pred, imsize)
+        im_pred = haar.integralImage(im_pred)
         for strClf in cascadeClf:
             ahx = 0 # sum of alfa * hx
             sumAlfa = 0 # sum of alfa
             for weakClf in strClf:
-                fx = haar.computeFeature(im, weakClf[0], weakClf[1], weakClf[2], weakClf[3], weakClf[4])
+                fx = haar.computeFeature(im_pred, weakClf[0], weakClf[1], weakClf[2], weakClf[3], weakClf[4])
                 hx = 1 if fx < weakClf[5] else 0
                 alfa = float(weakClf[6])
                 ahx += alfa * hx
@@ -96,6 +104,16 @@ class CascadeClassifier:
             result = 1 if ahx >= 0.5*sumAlfa else 0
             if(result == 0):
                 break
+        
+        if show and trueClass != None:
+            pred = 'Kelas Prediksi : Positif' if result==1 else 'Kelas Prediksi: Negatif'
+            true = 'Kelas Asli : Positif' if trueClass==1 else 'Kelas Asli: Negatif'
+            im = resize(im, 400)
+            im_show = cv2.copyMakeBorder(im, 0, 80, 0, 0, cv2.BORDER_CONSTANT, value=(0,0,0))
+            im_show = cv2.putText(im_show, pred, (00, im_show.shape[0]-40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 2)
+            im_show = cv2.putText(im_show, true, (00, im_show.shape[0]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 2)
+            cv2.imshow('Result', im_show)
+            cv2.waitKey(0)
         return result
 
     def fit(self, Ftarget=0.2, Dtarget=0.8, f=0.2, d=0.8, max_cascade=50):
@@ -133,8 +151,8 @@ class CascadeClassifier:
 
                 # Evaluate F and D
                 clf = [strClf]
-                posResult = [self.predict(cv2.imread(p,0), clf) for p in self.P_paths]
-                negResult = [self.predict(cv2.imread(n,0), clf) for n in self.N_paths]
+                posResult = [self.predict(cv2.imread(p,1), clf) for p in self.P_paths]
+                negResult = [self.predict(cv2.imread(n,1), clf) for n in self.N_paths]
                 y_true = np.hstack((np.zeros(len_N), np.ones(len_P)))
                 y_pred = np.array(negResult + posResult)
                 TN, FP, FN, TP = confusion_matrix(y_true, y_pred, labels=[1,0]).ravel()

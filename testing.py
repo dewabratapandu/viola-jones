@@ -12,8 +12,8 @@ def test(model_path, P_paths, N_paths, imsize):
 
     len_P = len(P_paths); len_N = len(N_paths)
 
-    posResult = [model.predict(cv2.imread(p,0), imsize=imsize) for p in P_paths]
-    negResult = [model.predict(cv2.imread(n,0), imsize=imsize) for n in N_paths]
+    posResult = [model.predict(cv2.imread(p,1), imsize=imsize, show=True, trueClass=1) for p in P_paths]
+    negResult = [model.predict(cv2.imread(n,1), imsize=imsize, show=True, trueClass=0) for n in N_paths]
     y_true = np.hstack((np.zeros(len_N), np.ones(len_P)))
     y_pred = np.array(negResult + posResult)
     TN, FP, FN, TP = confusion_matrix(y_true, y_pred, labels=[1,0]).ravel()
